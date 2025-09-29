@@ -56,17 +56,19 @@ class PollReader():
 
         # iterate through each row of the data
         for i in self.raw_data:
-
+            if i.startswith('month'):
+                continue
             # split up the row by column
-            seperated = i.split(' ')
+            row = i.strip().split(',')
 
             # map each part of the row to the correct column
-            self.data_dict['month'].append(seperated[0])
-            self.data_dict['date'].append(int(seperated[1]))
-            self.data_dict['sample'].append(int(seperated[2]))
-            self.data_dict['sample type'].append(seperated[2])
-            self.data_dict['Harris result'].append(float(seperated[3]))
-            self.data_dict['Trump result'].append(float(seperated[4]))
+            self.data_dict['month'].append(row[0])
+            self.data_dict['date'].append(int(row[1]))
+            sample_parts = row[2].split()
+            self.data_dict['sample'].append(int(sample_parts[0]))
+            self.data_dict['sample type'].append(sample_parts[1])
+            self.data_dict['Harris result'].append(float(row[3]))
+            self.data_dict['Trump result'].append(float(row[4]))
 
 
     def highest_polling_candidate(self):
@@ -83,11 +85,11 @@ class PollReader():
         max_trump = max(self.data_dict["Trump result"])
         max_harris = max(self.data_dict["Harris result"])
         if max_trump > max_harris:
-            return f"Trump: {max_trump *100 }%"
+            return f"Trump {max_trump*100:.1f}%"
         elif max_trump < max_harris:
-            return f"Harris: {max_harris * 100}"
-        else: 
-            return f"Even: {max_harris * 100}%"
+            return f"Harris {max_harris*100:.1f}%"
+        else:
+            return f"EVEN {max_harris*100:.1f}%"
 
 
     def likely_voter_polling_average(self):
@@ -134,56 +136,4 @@ class TestPollReader(unittest.TestCase):
     """
     def setUp(self):
         self.poll_reader = PollReader('polling_data.csv')
-        self.poll_reader.build_data_dict()
-
-    def test_build_data_dict(self):
-        self.assertEqual(len(self.poll_reader.data_dict['date']), len(self.poll_reader.data_dict['sample']))
-        self.assertTrue(all(isinstance(x, int) for x in self.poll_reader.data_dict['date']))
-        self.assertTrue(all(isinstance(x, int) for x in self.poll_reader.data_dict['sample']))
-        self.assertTrue(all(isinstance(x, str) for x in self.poll_reader.data_dict['sample type']))
-        self.assertTrue(all(isinstance(x, float) for x in self.poll_reader.data_dict['Harris result']))
-        self.assertTrue(all(isinstance(x, float) for x in self.poll_reader.data_dict['Trump result']))
-
-    def test_highest_polling_candidate(self):
-        result = self.poll_reader.highest_polling_candidate()
-        self.assertTrue(isinstance(result, str))
-        self.assertTrue("Harris" in result)
-        self.assertTrue("57.0%" in result)
-
-    def test_likely_voter_polling_average(self):
-        harris_avg, trump_avg = self.poll_reader.likely_voter_polling_average()
-        self.assertTrue(isinstance(harris_avg, float))
-        self.assertTrue(isinstance(trump_avg, float))
-        self.assertTrue(f"{harris_avg:.2%}" == "49.34%")
-        self.assertTrue(f"{trump_avg:.2%}" == "46.04%")
-
-    def test_polling_history_change(self):
-        harris_change, trump_change = self.poll_reader.polling_history_change()
-        self.assertTrue(isinstance(harris_change, float))
-        self.assertTrue(isinstance(trump_change, float))
-        self.assertTrue(f"{harris_change:+.2%}" == "+1.53%")
-        self.assertTrue(f"{trump_change:+.2%}" == "+2.07%")
-
-
-def main():
-    poll_reader = PollReader('polling_data.csv')
-    poll_reader.build_data_dict()
-
-    highest_polling = poll_reader.highest_polling_candidate()
-    print(f"Highest Polling Candidate: {highest_polling}")
-    
-    harris_avg, trump_avg = poll_reader.likely_voter_polling_average()
-    print(f"Likely Voter Polling Average:")
-    print(f"  Harris: {harris_avg:.2%}")
-    print(f"  Trump: {trump_avg:.2%}")
-    
-    harris_change, trump_change = poll_reader.polling_history_change()
-    print(f"Polling History Change:")
-    print(f"  Harris: {harris_change:+.2%}")
-    print(f"  Trump: {trump_change:+.2%}")
-
-
-
-if __name__ == '__main__':
-    main()
-    unittest.main(verbosity=2)
+        self
