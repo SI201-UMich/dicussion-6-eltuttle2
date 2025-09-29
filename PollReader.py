@@ -80,7 +80,14 @@ class PollReader():
             str: A string indicating the candidate with the highest polling percentage or EVEN,
              and the highest polling percentage.
         """
-        pass
+        max_trump = max(self.data_dict["Trump result"])
+        max_harris = max(self.data_dict["Harris result"])
+        if max_trump > max_harris:
+            return f"Trump: {max_trump *100 }%"
+        elif max_trump < max_harris:
+            return f"Harris: {max_harris * 100}"
+        else: 
+            return f"Even: {max_harris * 100}%"
 
 
     def likely_voter_polling_average(self):
@@ -91,7 +98,15 @@ class PollReader():
             tuple: A tuple containing the average polling percentages for Harris and Trump
                    among likely voters, in that order.
         """
-        pass
+        harris_sum = 0
+        trump_sum = 0
+        count = 0
+        for i, stype in enumerate(self.data_dict['sample type']):
+            if stype == 'LV':
+                harris_sum += self.data_dict['Harris result'][i]
+                trump_sum += self.data_dict['Trump result'][i]
+                count += 1
+        return (harris_sum / count, trump_sum / count)
 
 
     def polling_history_change(self):
@@ -105,7 +120,12 @@ class PollReader():
             tuple: A tuple containing the net change for Harris and Trump, in that order.
                    Positive values indicate an increase, negative values indicate a decrease.
         """
-        pass
+        n = 30
+        harris_earliest = sum(self.data_dict['Harris result'][:n]) / n
+        trump_earliest = sum(self.data_dict['Trump result'][:n]) / n
+        harris_latest = sum(self.data_dict['Harris result'][-n:]) / n
+        trump_latest = sum(self.data_dict['Trump result'][-n:]) / n
+        return (harris_latest - harris_earliest, trump_latest - trump_earliest)
 
 
 class TestPollReader(unittest.TestCase):
